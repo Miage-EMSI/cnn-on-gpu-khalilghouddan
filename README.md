@@ -122,7 +122,7 @@ Votre script **bench.py** :
 ### Exemple d’utilisation :
 ```bash
 python bench.py --epoch 5
-
+```
 
 ## 🧪 Mesure du temps GPU pour différents thread-blocks
 
