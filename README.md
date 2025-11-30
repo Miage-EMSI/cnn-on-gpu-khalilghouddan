@@ -10,25 +10,101 @@ L’implémentation de départ provient des excellents articles de Victor Zhou :
 
 - https://victorzhou.com/blog/intro-to-cnns-part-1/  
 - https://victorzhou.com/blog/intro-to-cnns-part-2/
+  
+Le projet part du code source disponible ici :  
+👉 https://github.com/fabricehuet/cnn-python  
 
 Le code d'origine utilise uniquement **Python en mono-thread**, **sans GPU**, et avec très peu de bibliothèques externes.
 
 L’objectif principal de ce projet est d’optimiser ce CNN en utilisant **Numba** afin de tirer parti du **GPU** pour accélérer les calculs.
 
----
 
 ## 🎯 Objectif du Projet
 
-Le projet part du code source disponible ici :  
-👉 https://github.com/fabricehuet/cnn-python  
-
-Vous devez modifier ce code pour :
+Modifier ce code pour :
 
 1. **Exécuter des parties critiques sur GPU avec Numba**  
 2. **Accélérer le modèle par rapport à la version CPU**  
 3. **Créer un script performance bench.py** pour comparer CPU vs GPU  
 4. **Créer un script analyze.py** pour reconnaître plusieurs chiffres dans une image JPG  
 5. **Rédiger un rapport Readme.md (celui-ci)** avec toutes les explications demandées
+
+---
+
+
+
+## 📈 Comparaison CPU vs GPU (bench.py)
+
+Votre script **bench.py** :
+
+- accepte l’option `--epoch n`
+- entraîne le modèle **sur CPU**
+- puis entraîne le modèle **sur GPU**
+- mesure les temps d’exécution
+- affiche des courbes comparatives
+
+### Exemple d’utilisation :
+```bash
+python bench.py --epoch 5
+```
+
+## 🧪 Mesure du temps GPU pour différents thread-blocks
+
+| Block size | Temps GPU | Commentaire |
+|------------|-----------|-------------|
+| 8 × 8      | Lent      | Trop peu de threads, sous-utilisation du GPU |
+| 16 × 16    | Optimal   | Meilleur équilibre entre nombre de threads et occupation mémoire |
+| 32 × 32    | Variable  | Peut saturer ou déséquilibrer selon le GPU |
+
+✔️ **Conclusion :**  
+➡️ 16 × 16 est le meilleur choix pour ce projet
+
+---
+
+## 🔎 Fonctionnement de analyze.py (Reconnaissance multi-chiffres)
+
+### 1️⃣ Chargement de l’image JPG
+- N’importe quelle taille  
+- Couleur ou noir et blanc  
+
+### 2️⃣ Prétraitement
+- Conversion en niveaux de gris  
+- Seuillage  
+- Détection des contours  
+- Extraction des **bounding boxes** des chiffres  
+- Tri des chiffres de gauche → droite  
+
+### 3️⃣ Passage dans le CNN
+Pour chaque chiffre :
+- Redimensionnement en 28×28  
+- Normalisation  
+- Inférence via le modèle CNN GPU  
+- Affichage du chiffre reconnu  
+
+### 4️⃣ Exemple d'exécution
+
+
+---
+
+## 📦 Structure Finale du Dépôt GitHub
+
+
+/cnn-python-gpu/
+│
+├── conv_gpu.py # Convolution GPU avec Numba
+├── pool_gpu.py # MaxPool GPU
+├── softmax_gpu.py # Softmax optimisé
+├── cnn_gpu.py # Modèle complet CNN GPU
+│
+├── bench.py # Comparaison CPU vs GPU
+├── analyze.py # Reconnaissance multi-chiffres depuis image JPG
+│
+├── README.md # Rapport complet
+└── requirements.txt # Bibliothèques nécessaires (Numba, numpy, pillow…)
+
+
+
+
 
 ---
 
@@ -106,81 +182,6 @@ Le GPU traite plusieurs images simultanément :
 - augmentation du taux d’occupation (occupancy),
 - meilleure utilisation des cores CUDA,
 - accélération significative sur l’entraînement et l’inférence.
-
----
-
-## 📈 Comparaison CPU vs GPU (bench.py)
-
-Votre script **bench.py** :
-
-- accepte l’option `--epoch n`
-- entraîne le modèle **sur CPU**
-- puis entraîne le modèle **sur GPU**
-- mesure les temps d’exécution
-- affiche des courbes comparatives
-
-### Exemple d’utilisation :
-```bash
-python bench.py --epoch 5
-```
-
-## 🧪 Mesure du temps GPU pour différents thread-blocks
-
-| Block size | Temps GPU | Commentaire |
-|------------|-----------|-------------|
-| 8 × 8      | Lent      | Trop peu de threads, sous-utilisation du GPU |
-| 16 × 16    | Optimal   | Meilleur équilibre entre nombre de threads et occupation mémoire |
-| 32 × 32    | Variable  | Peut saturer ou déséquilibrer selon le GPU |
-
-✔️ **Conclusion :**  
-➡️ 16 × 16 est le meilleur choix pour ce projet
-
----
-
-## 🔎 Fonctionnement de analyze.py (Reconnaissance multi-chiffres)
-
-### 1️⃣ Chargement de l’image JPG
-- N’importe quelle taille  
-- Couleur ou noir et blanc  
-
-### 2️⃣ Prétraitement
-- Conversion en niveaux de gris  
-- Seuillage  
-- Détection des contours  
-- Extraction des **bounding boxes** des chiffres  
-- Tri des chiffres de gauche → droite  
-
-### 3️⃣ Passage dans le CNN
-Pour chaque chiffre :
-- Redimensionnement en 28×28  
-- Normalisation  
-- Inférence via le modèle CNN GPU  
-- Affichage du chiffre reconnu  
-
-### 4️⃣ Exemple d'exécution
-
-
----
-
-## 📦 Structure Finale du Dépôt GitHub
-
-
-/cnn-python-gpu/
-│
-├── conv_gpu.py # Convolution GPU avec Numba
-├── pool_gpu.py # MaxPool GPU
-├── softmax_gpu.py # Softmax optimisé
-├── cnn_gpu.py # Modèle complet CNN GPU
-│
-├── bench.py # Comparaison CPU vs GPU
-├── analyze.py # Reconnaissance multi-chiffres depuis image JPG
-│
-├── README.md # Rapport complet
-└── requirements.txt # Bibliothèques nécessaires (Numba, numpy, pillow…)
-
-
-
-
 
 ---
 
